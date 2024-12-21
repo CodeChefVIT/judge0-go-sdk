@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-) 
-func (client *Client) doRequest(url string, method string, payload []byte) ([] byte, error) {
+)
+
+func (client *Client) doRequest(url string, method string, payload []byte) ([]byte, error) {
 	judgereq, err := http.NewRequest(method, url, bytes.NewReader(payload))
 	if err != nil {
 		return nil, fmt.Errorf("error creating the HTTP request: %v", err)
 	}
 	judgereq.Header.Add("Content-Type", "application/json")
+	client.authProvider.SetAuthHeaders(judgereq)
 
 	resp, err := client.httpClient.Do(judgereq)
 	if err != nil {
@@ -27,7 +29,7 @@ func (client *Client) doRequest(url string, method string, payload []byte) ([] b
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response body: %v", err)
-	
+
 	}
 	return body, nil
 }
